@@ -32,7 +32,7 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar  navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <a class="navbar-brand"><img id="logo" height=30 src="img/curbflow-logo.png"></img></a>
@@ -52,7 +52,7 @@
 
       <div class="row before-submit">
         <div class="col-lg-8 col-lg-offset-1">
-          <h3>Hi! Please choose your WiFi Network from the list.</h3>
+          <h3>Please choose your WiFi Network from the list.</h3>
         </div>
       </div>
 
@@ -86,13 +86,18 @@
               <div class="col-lg-4">
                 <input type='password' class="form-control" name='passphrase'></input>
               </div>
+              <div class="form-check col-lg-8 col-lg-offset-2 text-center">
+                <input type='checkbox' class="form-check-input" name='show_password' id='show_password'></input>
+                <label for="show_password" class="form-check-label">Show password</label>
+              </div>
+              
             </div>
             <div class="text-center">
               <div class="form-group col-lg-6">
-                <button type='submit' class='btn btn-success'>Connect</button>
+                <button type='submit' name='submit' value='wifi' class='btn btn-success'>Connect</button>
               </div>
               <div class="form-group col-lg-6">
-                  <button type='submit' value='lte' class='btn btn-warning'>LTE Only Device</button>
+                  <button type='submit' name='submit' value='lte' class='btn btn-warning'>LTE Only Device</button>
               </div>
             </div>
           </form>

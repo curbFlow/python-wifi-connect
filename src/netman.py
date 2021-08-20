@@ -268,7 +268,6 @@ def connect_to_AP(conn_type=None, conn_name=GENERIC_CONNECTION_NAME, \
                 conn_dict = hotspot_dict
             else:
                 conn_dict = hotspot_dict_passwd
-                print(f"password:{password}")
             conn_str = 'HOTSPOT'
 
         if conn_type == CONN_TYPE_SEC_NONE:

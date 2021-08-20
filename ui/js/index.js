@@ -60,3 +60,15 @@ $(function(){
         ev.preventDefault();
     });
 });
+$(document).ready(function() {
+    $('input[name=show_password]').on('change', function() {
+        let passwordField = $('input[name=passphrase]');
+        if (this.checked) {
+            passwordField[0].type = "text";
+        }
+        else {
+            passwordField[0].type = "password";
+        }
+
+    })
+})
