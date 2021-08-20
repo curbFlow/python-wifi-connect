@@ -126,58 +126,62 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             self.end_headers()
             response = BytesIO()
             fields = parse_qs(body.decode('utf-8'))
-            #print(f'POST received: {fields}')
-
-            # Parse the form post
-            FORM_SSID = 'ssid'
-            FORM_HIDDEN_SSID = 'hidden-ssid'
-            FORM_USERNAME = 'identity'
-            FORM_PASSWORD = 'passphrase'
-
-            if FORM_SSID not in fields:
-                print(f'Error: POST is missing {FORM_SSID} field.')
-                return
-
-            ssid = fields[FORM_SSID][0]
-            password = None
-            username = None
-            if FORM_HIDDEN_SSID in fields: 
-                ssid = fields[FORM_HIDDEN_SSID][0] # override with hidden name
-            if FORM_USERNAME in fields: 
-                username = fields[FORM_USERNAME][0] 
-            if FORM_PASSWORD in fields: 
-                password = fields[FORM_PASSWORD][0] 
-
-            # Look up the ssid in the list we sent, to find out its security
-            # type for the new connection we have to make
-            conn_type = netman.CONN_TYPE_SEC_NONE # Open, no auth AP
-
-            if FORM_HIDDEN_SSID in fields: 
-                conn_type = netman.CONN_TYPE_SEC_PASSWORD # Assumption...
-
-            for s in self.ssids:
-                if FORM_SSID in s and ssid == s[FORM_SSID]:
-                    if s['security'] == "ENTERPRISE":
-                        conn_type = netman.CONN_TYPE_SEC_ENTERPRISE
-                    elif s['security'] == "NONE":
-                        conn_type = netman.CONN_TYPE_SEC_NONE 
-                    else:
-                        # all others need a password
-                        conn_type = netman.CONN_TYPE_SEC_PASSWORD
-                    break
-
-            # Stop the hotspot
-            netman.stop_hotspot()
-
-            # Connect to the user's selected AP
-            success = netman.connect_to_AP(conn_type=conn_type, ssid=ssid, \
-                    username=username, password=password)
-
-            if success:
-                response.write(b'OK\n')
+            print(f'POST received: {fields}, path:{self.path}')
+            if self.path=="/connect-lte":
+                # Stop the hotspot
+                netman.stop_hotspot()
+                success = False
             else:
-                response.write(b'ERROR\n')
-            self.wfile.write(response.getvalue())
+                # Parse the form post
+                FORM_SSID = 'ssid'
+                FORM_HIDDEN_SSID = 'hidden-ssid'
+                FORM_USERNAME = 'identity'
+                FORM_PASSWORD = 'passphrase'
+
+                if FORM_SSID not in fields:
+                    print(f'Error: POST is missing {FORM_SSID} field.')
+                    return
+
+                ssid = fields[FORM_SSID][0]
+                password = None
+                username = None
+                if FORM_HIDDEN_SSID in fields: 
+                    ssid = fields[FORM_HIDDEN_SSID][0] # override with hidden name
+                if FORM_USERNAME in fields: 
+                    username = fields[FORM_USERNAME][0] 
+                if FORM_PASSWORD in fields: 
+                    password = fields[FORM_PASSWORD][0] 
+
+                # Look up the ssid in the list we sent, to find out its security
+                # type for the new connection we have to make
+                conn_type = netman.CONN_TYPE_SEC_NONE # Open, no auth AP
+
+                if FORM_HIDDEN_SSID in fields: 
+                    conn_type = netman.CONN_TYPE_SEC_PASSWORD # Assumption...
+
+                for s in self.ssids:
+                    if FORM_SSID in s and ssid == s[FORM_SSID]:
+                        if s['security'] == "ENTERPRISE":
+                            conn_type = netman.CONN_TYPE_SEC_ENTERPRISE
+                        elif s['security'] == "NONE":
+                            conn_type = netman.CONN_TYPE_SEC_NONE 
+                        else:
+                            # all others need a password
+                            conn_type = netman.CONN_TYPE_SEC_PASSWORD
+                        break
+
+                # Stop the hotspot
+                netman.stop_hotspot()
+
+                # Connect to the user's selected AP
+                success = netman.connect_to_AP(conn_type=conn_type, ssid=ssid, \
+                        username=username, password=password)
+
+                if success:
+                    response.write(b'OK\n')
+                else:
+                    response.write(b'ERROR\n')
+                self.wfile.write(response.getvalue())
 
             # Handle success or failure of the new connection
             if success:

@@ -59,6 +59,13 @@ $(function(){
         });
         ev.preventDefault();
     });
+    $('#connect-lte-form').submit(function(ev){
+        $.post('/connect-lte', $('#connect-form-lte').serialize(), function(data){
+            $('.before-submit').hide();
+            $('#submit-message').removeClass('hidden');
+        });
+        ev.preventDefault();
+    });
 });
 $(document).ready(function() {
     $('input[name=show_password]').on('change', function() {
