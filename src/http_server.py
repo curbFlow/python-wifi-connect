@@ -22,6 +22,7 @@ def cleanup():
     print("Cleaning up prior to exit.")
     dnsmasq.stop()
     netman.stop_hotspot()
+    dnsmasq.restart_dnsmasq_service()
 
 
 #------------------------------------------------------------------------------
@@ -37,7 +38,7 @@ class MyHTTPServer(HTTPServer):
 # A custom http request handler class factory.
 # Handle the GET and POST requests from the UI form and JS.
 # The class factory allows us to pass custom arguments to the handler.
-def RequestHandlerClassFactory(address, ssids, rcode):
+def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", hotspot_password=""):
 
     class MyHTTPReqHandler(SimpleHTTPRequestHandler):
 
@@ -47,6 +48,8 @@ def RequestHandlerClassFactory(address, ssids, rcode):
             self.address = address
             self.ssids = ssids
             self.rcode = rcode
+            self.hotspot_name = hotspot_name
+            self.hotspot_password = hotspot_password
             super(MyHTTPReqHandler, self).__init__(*args, **kwargs)
 
         # See if this is a specific request, otherwise let the server handle it.
@@ -187,7 +190,7 @@ def RequestHandlerClassFactory(address, ssids, rcode):
                 self.ssids = netman.get_list_of_access_points()
 
                 # Start the hotspot again
-                netman.start_hotspot() 
+                netman.start_hotspot(self.hotspot_name, self.hotspot_password) 
 
     return  MyHTTPReqHandler # the class our factory just created.
 
@@ -202,7 +205,8 @@ def main(args):
     rcode = args.registration_code
     delete_connections = args.delete_connections_first
     timeout = args.timeout
-    hostpot_name = args.hotspot_name
+    hotspot_name = args.hotspot_name
+    hotspot_password = args.hotspot_password
     # See if caller wants to delete all existing connections first
     if delete_connections:
         netman.delete_all_wifi_connections()
@@ -219,7 +223,7 @@ def main(args):
     ssids = netman.get_list_of_access_points()
 
     # Start the hotspot
-    if not netman.start_hotspot():
+    if not netman.start_hotspot(hotspot_name, hotspot_password):
         print('Error starting hotspot, exiting.')
         sys.exit(1)
 
@@ -239,11 +243,11 @@ def main(args):
     server_address = (address, port)
 
     # Custom request handler class (so we can pass in our own args)
-    MyRequestHandlerClass = RequestHandlerClassFactory(address, ssids, rcode)
+    MyRequestHandlerClass = RequestHandlerClassFactory(address, ssids, rcode, hotspot_name)
 
     # Start an HTTP server to serve the content in the ui dir and handle the 
     # POST request in the handler class.
-    print(f'Waiting for a connection to our hotspot {hostpot_name} ...')
+    print(f'Waiting for a connection to our hotspot {hotspot_name} ...')
     httpd = MyHTTPServer(web_dir, server_address, MyRequestHandlerClass)
     try:
         httpd.serve_forever()
@@ -295,9 +299,11 @@ f'  -h Show help.\n'
     parser.add_argument('-r', '--registration_code',
                         help='Device Registration Code', required=False, default="")
     parser.add_argument('-t', '--timeout',
-                        help='Timeout seconds', required=False, default=600, type=int)
+                        help='Timeout seconds', required=False, default=0, type=int)
     parser.add_argument('-s', '--hotspot_name',
                         help='HotSpot name to create', required=False, default="CurbSensor")
+    parser.add_argument('-e', '--hotspot_password',
+                        help='Password to use for the HotSpot', required=False, default="")
     
     args = parser.parse_args()
 

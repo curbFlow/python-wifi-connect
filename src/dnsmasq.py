@@ -1,6 +1,7 @@
 # start / stop the dnsmasq process
 
 import subprocess, time
+import dbus
 
 DEFAULT_GATEWAY="192.168.42.1"
 DEFAULT_DHCP_RANGE="192.168.42.2,192.168.42.254"
@@ -19,6 +20,14 @@ def stop():
         ps = subprocess.Popen(f"kill -9 {pid}", shell=True)
         ps.wait()
 
+
+def restart_dnsmasq_service():
+    # This is needed in order to regain dns lookup
+    sysbus = dbus.SystemBus()
+    systemd1 = sysbus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
+    manager = dbus.Interface(systemd1, 'org.freedesktop.systemd1.Manager')
+    job = manager.RestartUnit('dnsmasq.service', 'fail')
+    print("restarted dnsmasq service")
 
 def start():
     # first kill any existing dnsmasq

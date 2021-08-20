@@ -154,9 +154,9 @@ def get_list_of_access_points():
 #------------------------------------------------------------------------------
 # Start a local hotspot on the wifi interface.
 # Returns True for success, False for error.
-def start_hotspot(ssid):
+def start_hotspot(ssid, password):
     return connect_to_AP(CONN_TYPE_HOTSPOT, HOTSPOT_CONNECTION_NAME, \
-            ssid)
+            ssid, password=password)
 
 
 #------------------------------------------------------------------------------
@@ -186,6 +186,23 @@ def connect_to_AP(conn_type=None, conn_name=GENERIC_CONNECTION_NAME, \
             '802-11-wireless': {'band': 'bg',
                                 'mode': 'ap',
                                 'ssid': ssid},
+            'connection': {'autoconnect': False,
+                           'id': conn_name,
+                           'interface-name': 'wlan0',
+                           'type': '802-11-wireless',
+                           'uuid': str(uuid.uuid4())},
+            'ipv4': {'address-data': 
+                        [{'address': '192.168.42.1', 'prefix': 24}],
+                     'addresses': [['192.168.42.1', 24, '0.0.0.0']],
+                     'method': 'manual'},
+            'ipv6': {'method': 'auto'}
+        }
+        hotspot_dict_passwd = {
+            '802-11-wireless': {'band': 'bg',
+                                'mode': 'ap',
+                                'ssid': ssid},
+            '802-11-wireless-security': 
+                {'key-mgmt': 'wpa-psk', 'psk': password},
             'connection': {'autoconnect': False,
                            'id': conn_name,
                            'interface-name': 'wlan0',
@@ -247,7 +264,11 @@ def connect_to_AP(conn_type=None, conn_name=GENERIC_CONNECTION_NAME, \
         conn_dict = None
         conn_str = ''
         if conn_type == CONN_TYPE_HOTSPOT:
-            conn_dict = hotspot_dict
+            if len(password) == 0:
+                conn_dict = hotspot_dict
+            else:
+                conn_dict = hotspot_dict_passwd
+                print(f"password:{password}")
             conn_str = 'HOTSPOT'
 
         if conn_type == CONN_TYPE_SEC_NONE:
