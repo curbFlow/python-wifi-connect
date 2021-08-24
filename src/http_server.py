@@ -18,7 +18,19 @@ ADDRESS = '192.168.42.1'
 PORT = 80
 UI_PATH = '../ui'
 
+initial_connection_config_file = '/etc/initial_connection.json'
 
+def get_initial_connection_config():
+  if os.path.exists(initial_connection_config_file):
+    with open(initial_connection_config_file) as f:
+      config_json = json.load(f)
+      return config_json
+  else:
+    return None
+
+def write_initial_connection_config(config_dict):
+    with open(initial_connection_config_file, 'w') as f:
+        json.dump(config_dict, f)
 #------------------------------------------------------------------------------
 # called at exit
 def cleanup():
@@ -133,7 +145,8 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             if self.path=="/connect-lte":
                 # Stop the hotspot
                 netman.stop_hotspot()
-                success = False
+                write_initial_connection_config({"lte_only": True})
+                success = True
             else:
                 # Parse the form post
                 FORM_SSID = 'ssid'
@@ -181,6 +194,7 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
                         username=username, password=password)
 
                 if success:
+                    write_initial_connection_config({"lte_only": False})
                     response.write(b'OK\n')
                 else:
                     response.write(b'ERROR\n')
@@ -222,6 +236,10 @@ def main(args):
     hotspot_name = args.hotspot_name
     hotspot_password = args.hotspot_password
 
+    initial_connection_config = get_initial_connection_config()
+    if initial_connection_config is not None and initial_connection_config.get("lte_only", False):
+        print(f"Connection has already been configured to LTE only and device config has not yet been updated. Exiting")
+        sys.exit()
     # Start a thread to keep track of time and exit when timeout has passed
     t=threading.Thread(target=exit_on_timeout, args=[timeout])
     t.setDaemon(True)
