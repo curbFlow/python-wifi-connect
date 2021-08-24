@@ -1,6 +1,9 @@
 # Our main wifi-connect application, which is based around an HTTP server.
 
 import os, getopt, sys, json, atexit
+import signal
+import time
+import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import parse_qs
 from io import BytesIO
@@ -199,6 +202,13 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
     return  MyHTTPReqHandler # the class our factory just created.
 
 
+def exit_on_timeout(timeout_seconds):
+    time_start = time.time()
+    while time.time() - time_start < timeout_seconds:
+        time.sleep(0.4)
+    print("Timeout Expired, exiting...")
+    os.kill(os.getpid(), signal.SIGINT)
+
 #------------------------------------------------------------------------------
 # Create the hotspot, start dnsmasq, start the HTTP server.
 # def main(address, port, ui_path, rcode, delete_connections):
@@ -211,6 +221,11 @@ def main(args):
     timeout = args.timeout
     hotspot_name = args.hotspot_name
     hotspot_password = args.hotspot_password
+
+    # Start a thread to keep track of time and exit when timeout has passed
+    t=threading.Thread(target=exit_on_timeout, args=[timeout])
+    t.setDaemon(True)
+    t.start()
     # See if caller wants to delete all existing connections first
     if delete_connections:
         netman.delete_all_wifi_connections()
