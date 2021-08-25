@@ -53,7 +53,7 @@ class MyHTTPServer(HTTPServer):
 # A custom http request handler class factory.
 # Handle the GET and POST requests from the UI form and JS.
 # The class factory allows us to pass custom arguments to the handler.
-def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", hotspot_password=""):
+def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", hotspot_password="", device_name=""):
 
     class MyHTTPReqHandler(SimpleHTTPRequestHandler):
 
@@ -65,6 +65,7 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             self.rcode = rcode
             self.hotspot_name = hotspot_name
             self.hotspot_password = hotspot_password
+            self.device_name = device_name
             super(MyHTTPReqHandler, self).__init__(*args, **kwargs)
 
         # See if this is a specific request, otherwise let the server handle it.
@@ -95,6 +96,14 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
                 self.end_headers()
                 response = BytesIO()
                 response.write(self.rcode.encode('utf-8'))
+                print(f'GET {self.path} returning: {response.getvalue()}')
+                self.wfile.write(response.getvalue())
+                return
+            if '/device_name' == self.path:
+                self.send_response(200)
+                self.end_headers()
+                response = BytesIO()
+                response.write(self.device_name.encode('utf-8'))
                 print(f'GET {self.path} returning: {response.getvalue()}')
                 self.wfile.write(response.getvalue())
                 return
@@ -142,10 +151,12 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             response = BytesIO()
             fields = parse_qs(body.decode('utf-8'))
             print(f'POST received: {fields}, path:{self.path}')
-            if self.path=="/connect-lte":
+            initial_config_params = {"device_name": fields['device_name'][0]}
+            if fields['connection_type'][0]=="lte":
                 # Stop the hotspot
                 netman.stop_hotspot()
-                write_initial_connection_config({"lte_only": True})
+                initial_config_params["lte_only"] = True
+                write_initial_connection_config(initial_config_params)
                 success = True
             else:
                 # Parse the form post
@@ -194,7 +205,8 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
                         username=username, password=password)
 
                 if success:
-                    write_initial_connection_config({"lte_only": False})
+                    initial_config_params["lte_only"] = False
+                    write_initial_connection_config(initial_config_params)
                     response.write(b'OK\n')
                 else:
                     response.write(b'ERROR\n')
@@ -235,6 +247,7 @@ def main(args):
     timeout = args.timeout
     hotspot_name = args.hotspot_name
     hotspot_password = args.hotspot_password
+    device_name = args.device_name
 
     initial_connection_config = get_initial_connection_config()
     if initial_connection_config is not None and initial_connection_config.get("lte_only", False):
@@ -280,7 +293,7 @@ def main(args):
     server_address = (address, port)
 
     # Custom request handler class (so we can pass in our own args)
-    MyRequestHandlerClass = RequestHandlerClassFactory(address, ssids, rcode, hotspot_name)
+    MyRequestHandlerClass = RequestHandlerClassFactory(address, ssids, rcode, hotspot_name, device_name=device_name)
 
     # Start an HTTP server to serve the content in the ui dir and handle the 
     # POST request in the handler class.
@@ -341,6 +354,8 @@ f'  -h Show help.\n'
                         help='HotSpot name to create', required=False, default="CurbSensor")
     parser.add_argument('-e', '--hotspot_password',
                         help='Password to use for the HotSpot', required=False, default="")
+    parser.add_argument('-n', '--device_name',
+                        help='Device name to prefill the field with', required=False, default="")
     
     args = parser.parse_args()
 

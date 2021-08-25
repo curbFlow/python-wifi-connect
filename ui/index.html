@@ -92,20 +92,22 @@
               </div>
               
             </div>
-            <div class="text-center">
-              <div class="form-group col-lg-6">
-                <button type='submit' name='submit' value='wifi' class='btn btn-success'>Connect</button>
+
+            <div class="form-group" id="device-group">
+              <h3 class="col-lg-8">Enter Device Name:</h3>
+              <div class="col-lg-4">
+                <input class="form-control" name="device_name" id="device_name" required="required"></input>
               </div>
             </div>
-          </form>
-        </div>
-      </div>
-      <div class="row before-submit">
-        <div class="col-lg-8 col-lg-offset-1">
-          <form class="form form-horizontal" id='connect-lte-form' action='/connect_lte' method='post'>
+
             <div class="text-center">
               <div class="form-group col-lg-6">
-                <button type='submit' class='btn btn-warning'>LTE Only Device</button>
+                <button type='submit' name='connection_type' value='wifi' class='btn btn-success'>Connect</button>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="form-group col-lg-6">
+                <button type='submit' name='connection_type' value='lte' class='btn btn-warning'>LTE Only Device</button>
               </div>
             </div>
           </form>

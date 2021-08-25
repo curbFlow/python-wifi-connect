@@ -32,6 +32,9 @@ $(function(){
             $('.reg-row').hide(); // no reg code, so hide that part of the UI
 	}
     });
+    $.get("/device_name", function(data){
+            $('#device_name').val(data);
+    });
 
     $.get("/networks", function(data){
         if(data.length === 0){
@@ -52,23 +55,17 @@ $(function(){
         }
     });
 
-    $('#connect-form').submit(function(ev){
-        $.post('/connect', $('#connect-form').serialize(), function(data){
+    $(':submit').on("click", function(ev){
+        ev.preventDefault();
+        post_params = $('#connect-form').serialize() + "&" + $(this).attr("name") + "=" + $(this).val()
+        $.post('/connect', post_params, function(data){
             $('.before-submit').hide();
             $('#submit-message').removeClass('hidden');
         });
-        ev.preventDefault();
+        return false;
     });
-    $('#connect-lte-form').submit(function(ev){
-        $.post('/connect-lte', $('#connect-form-lte').serialize(), function(data){
-            $('.before-submit').hide();
-            $('#submit-message').removeClass('hidden');
-        });
-        ev.preventDefault();
-    });
-});
-$(document).ready(function() {
-    $('input[name=show_password]').on('change', function() {
+
+    $('#show_password').on('change', function() {
         let passwordField = $('input[name=passphrase]');
         if (this.checked) {
             passwordField[0].type = "text";
@@ -78,4 +75,4 @@ $(document).ready(function() {
         }
 
     })
-})
+});
