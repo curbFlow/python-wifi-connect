@@ -21,8 +21,8 @@ UI_PATH = '../ui'
 initial_connection_config_file = '/etc/initial_connection.json'
 
 def get_initial_connection_config():
-  if os.path.exists(initial_connection_config_file):
-    with open(initial_connection_config_file) as f:
+  if os.path.exists(initial_connection_config_file) and os.path.getsize(initial_connection_config_file) > 0:
+    with open(initial_connection_config_file, 'r') as f:
       config_json = json.load(f)
       return config_json
   else:
@@ -201,7 +201,7 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
                 netman.stop_hotspot()
 
                 # Connect to the user's selected AP
-                success = netman.connect_to_AP(conn_type=conn_type, ssid=ssid, \
+                success = netman.connect_to_AP(conn_type=conn_type, conn_name=ssid, ssid=ssid, \
                         username=username, password=password)
 
                 if success:
