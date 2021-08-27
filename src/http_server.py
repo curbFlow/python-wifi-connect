@@ -359,7 +359,7 @@ f'  -h Show help.\n'
     
     args = parser.parse_args()
 
-    print(args)
+    # print(args)
     main(args)
 
 

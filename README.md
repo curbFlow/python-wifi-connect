@@ -1,8 +1,7 @@
 # python-wifi-connect
 An application that displays a wifi configuration UI for embedded Linux devices.
 
-Inspired by the [wifi-connect](https://github.com/balena-io/wifi-connect) project written by [balena.io](https://www.balena.io/).
-
+Adapted from [python-wifi-connect](https://github.com/OpenAgricultureFoundation/python-wifi-connect) project 
 # Install and Run
 
 Please read the [INSTALL.md](INSTALL.md) then the [RUN.md](RUN.md) files.
@@ -19,7 +18,7 @@ WiFi Connect detects available WiFi networks and opens an access point with a ca
 
 ### 2. Connect: User Connects Phone to Device Access Point
 
-Connect to the opened access point on the device from your mobile phone or laptop. The access point SSID is, by default, `PFC_EDU-<name>` where "name" is something random like "shy-lake" or "green-frog". 
+Connect to the opened access point on the device from your mobile phone or laptop. The access point SSID is passed in as a command line argument to `http_server.py` 
 
 ### 3. Portal: Phone Shows Captive Portal to User
 
