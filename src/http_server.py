@@ -151,7 +151,7 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             response = BytesIO()
             fields = parse_qs(body.decode('utf-8'))
             print(f'POST received: {fields}, path:{self.path}')
-            initial_config_params = {"device_name": fields['device_name'][0]}
+            initial_config_params = {"name": fields['device_name'][0]}
             if fields['connection_type'][0]=="lte":
                 # Stop the hotspot
                 netman.stop_hotspot()
