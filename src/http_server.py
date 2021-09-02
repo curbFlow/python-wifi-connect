@@ -17,6 +17,7 @@ import dnsmasq
 ADDRESS = '192.168.42.1'
 PORT = 80
 UI_PATH = '../ui'
+pid = None
 
 initial_connection_config_file = '/etc/initial_connection.json'
 
@@ -35,9 +36,9 @@ def write_initial_connection_config(config_dict):
 # called at exit
 def cleanup():
     print("Cleaning up prior to exit.")
-    dnsmasq.stop()
+    dnsmasq.stop(pid)
     netman.stop_hotspot()
-    dnsmasq.restart_dnsmasq_service()
+    # dnsmasq.restart_dnsmasq_service()
 
 
 #------------------------------------------------------------------------------
@@ -279,7 +280,8 @@ def main(args):
 
     # Start dnsmasq (to advertise us as a router so captured portal pops up
     # on the users machine to vend our UI in our http server)
-    dnsmasq.start()
+    global pid
+    pid = dnsmasq.start()
 
     # Find the ui directory which is up one from where this file is located.
     web_dir = os.path.join(os.path.dirname(__file__), ui_path)
@@ -302,7 +304,7 @@ def main(args):
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        dnsmasq.stop()
+        dnsmasq.stop(pid)
         netman.stop_hotspot()
         httpd.server_close()
 

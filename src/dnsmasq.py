@@ -8,13 +8,16 @@ DEFAULT_DHCP_RANGE="192.168.42.2,192.168.42.254"
 DEFAULT_INTERFACE="wlan0" # use 'ip link show' to see list of interfaces
 
 
-def stop():
-    ps = subprocess.Popen("ps -e | grep ' dnsmasq' | cut -c 1-6", shell=True, stdout=subprocess.PIPE)
-    pid = ps.stdout.read()
-    ps.stdout.close()
-    ps.wait()
-    pid = pid.decode('utf-8')
-    pid = pid.strip()
+def stop(pid=None):
+    if not pid:
+        ps = subprocess.Popen("ps -e | grep ' dnsmasq' | cut -c 1-6", shell=True, stdout=subprocess.PIPE)
+        pid = ps.stdout.read()
+        ps.stdout.close()
+        ps.wait()
+        pid = pid.decode('utf-8')
+        pid = pid.strip()
+    else:
+        pid = str(pid)
     if 0 < len(pid):
         print(f"Killing dnsmasq, PID='{pid}'")
         ps = subprocess.Popen(f"kill -9 {pid}", shell=True)
@@ -31,7 +34,7 @@ def restart_dnsmasq_service():
 
 def start():
     # first kill any existing dnsmasq
-    stop()
+    # stop()
 
     # build the list of args
     path = "/usr/sbin/dnsmasq"
@@ -53,5 +56,7 @@ def start():
     # give a few seconds for the proc to start
     time.sleep(2)
     print(f'Started dnsmasq, PID={ps.pid}')
+    #Return the pid of the dnsmasq server so we can kill it later on stop
+    return ps.pid
 
 
