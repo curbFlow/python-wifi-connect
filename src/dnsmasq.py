@@ -10,12 +10,7 @@ DEFAULT_INTERFACE="wlan0" # use 'ip link show' to see list of interfaces
 
 def stop(pid=None):
     if not pid:
-        ps = subprocess.Popen("ps -e | grep ' dnsmasq' | cut -c 1-6", shell=True, stdout=subprocess.PIPE)
-        pid = ps.stdout.read()
-        ps.stdout.close()
-        ps.wait()
-        pid = pid.decode('utf-8')
-        pid = pid.strip()
+       return
     else:
         pid = str(pid)
     if 0 < len(pid):
