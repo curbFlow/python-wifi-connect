@@ -1,1 +1,2 @@
-python-networkmanager
+python-networkmanager==2.2
+dbus_python==1.2.18
