@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Curbflow WiFi Connect</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -17,116 +17,134 @@
     <link rel="shortcut icon" href="/img/favicon.ico">
 
     <style>
-      body {
-        padding-top: 80px;
-      }
+        body {
+            padding-top: 80px;
+        }
 
-      #logo {
-        margin-top: -4px;
-      }
+        #logo {
+            margin-top: -4px;
+        }
 
-      button {
-        margin-top: 7px;
-      }
+        button {
+            margin-top: 7px;
+        }
     </style>
-  </head>
+</head>
 
-  <body>
-    <nav class="navbar  navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <a class="navbar-brand"><img id="logo" height=30 src="img/curbflow-logo.png"></img></a>
-        </div>
-      </div>
-    </nav>
-
+<body>
+<nav class="navbar  navbar-fixed-top">
     <div class="container">
-
-      <div class="row reg-row">
-        <div class="col-lg-8 col-lg-offset-1">
-          <h4>Please write down this device registration code:</h4>
-          <input class="form-control" id="regcode" readonly value=""></input>
-          <p>You will need it to add your device to your account in the next step.</p>
+        <div class="navbar-header">
+            <a class="navbar-brand"><img id="logo" height=30 src="img/curbflow-logo.png"></img></a>
         </div>
-      </div>
-
-      <div class="row before-submit">
-        <div class="col-lg-8 col-lg-offset-1">
-          <h3>Please choose your WiFi Network from the list.</h3>
-        </div>
-      </div>
-
-      <div class="row before-submit">
-        <div class="col-lg-8 col-lg-offset-1">
-          <form class="form form-horizontal" id='connect-form' action='/connect' method='post'>
-
-            <div class="form-group">
-              <label for="ssid-select" class="control-label col-lg-4">WiFi Networks</label>
-              <div class="col-lg-4">
-                <select id='ssid-select' class="form-control" name='ssid'></select>
-              </div>
-            </div>
-
-            <div class="form-group hidden" id="hidden-ssid-group">
-              <label for="hidden-ssid" class="control-label col-lg-4">Hidden WiFi Network Name</label>
-              <div class="col-lg-4">
-                <input class="form-control" name="hidden-ssid"></input>
-              </div>
-            </div>
-
-            <div class="form-group hidden" id="identity-group">
-              <label for="identity" class="control-label col-lg-4">WiFi Username</label>
-              <div class="col-lg-4">
-                <input class="form-control" name="identity"></input>
-              </div>
-            </div>
-
-            <div class="form-group hidden" id="passphrase-group">
-              <label for="passphrase" class="control-label col-lg-4">WiFi Password</label>
-              <div class="col-lg-4">
-                <input type='password' class="form-control" name='passphrase'></input>
-              </div>
-              <div class="form-check col-lg-8 col-lg-offset-2 text-center">
-                <input type='checkbox' class="form-check-input" id='show_password'></input>
-                <label for="show_password" class="form-check-label">Show password</label>
-              </div>
-              
-            </div>
-
-            <div class="form-group" id="device-group">
-              <h3 class="col-lg-8">Enter Device Name:</h3>
-              <div class="col-lg-4">
-                <input class="form-control" name="device_name" id="device_name" required="required"></input>
-              </div>
-            </div>
-
-            <div class="text-center">
-              <div class="form-group col-lg-6">
-                <button type='submit' name='connection_type' value='wifi' class='btn btn-success'>Connect</button>
-              </div>
-            </div>
-            <div class="text-center">
-              <div class="form-group col-lg-6">
-                <button type='submit' name='connection_type' value='lte' class='btn btn-warning'>LTE Only Device</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="row hidden" id='submit-message'>
-        <div class="col-lg-8 col-lg-offset-1">
-          <h3>Applying changes...</h3>
-          <p>Your device will soon be online. If connection is unsuccessful, the Access Point will be back up in a few minutes.</p>
-        </div>
-      </div>
-
-      <div class="row hidden" id='no-networks-message'>
-        <div class="col-lg-8 col-lg-offset-1">
-          <h3>No wifi networks available</h3>
-          <p>Please ensure there is a network within range and reboot the device.</p>
-        </div>
-      </div>
-
     </div>
-  </body>
+</nav>
+
+<div class="container">
+
+    <div class="row reg-row">
+        <div class="col-lg-8 col-lg-offset-1">
+            <h4>Please write down this device registration code:</h4>
+            <input class="form-control" id="regcode" readonly value=""></input>
+            <p>You will need it to add your device to your account in the next step.</p>
+        </div>
+    </div>
+
+    <div class="row before-submit">
+        <div class="col-lg-8 col-lg-offset-1">
+            <h3>Please choose your WiFi Network from the list.</h3>
+        </div>
+    </div>
+
+    <div class="row before-submit">
+        <div class="col-lg-8 col-lg-offset-1">
+            <form class="form form-horizontal" id='connect-form' action='/connect' method='post'>
+
+                <div class="form-group">
+                    <label for="ssid-select" class="control-label col-lg-4">WiFi Networks</label>
+                    <div class="col-lg-4">
+                        <select id='ssid-select' class="form-control" name='ssid'></select>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="hidden-ssid-group">
+                    <label for="hidden-ssid" class="control-label col-lg-4">Hidden WiFi Network Name</label>
+                    <div class="col-lg-4">
+                        <input class="form-control" name="hidden-ssid"></input>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="identity-group">
+                    <label for="identity" class="control-label col-lg-4">WiFi Username</label>
+                    <div class="col-lg-4">
+                        <input class="form-control" name="identity"></input>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="passphrase-group">
+                    <label for="passphrase" class="control-label col-lg-4">WiFi Password</label>
+                    <div class="col-lg-4">
+                        <input type='password' class="form-control" name='passphrase'></input>
+                    </div>
+                    <div class="form-check col-lg-8 col-lg-offset-2 text-center">
+                        <input type='checkbox' class="form-check-input" id='show_password'></input>
+                        <label for="show_password" class="form-check-label">Show password</label>
+                    </div>
+
+                </div>
+
+                <div class="form-group" id="device-group">
+                    <h3 class="col-lg-8">Enter Device Name:</h3>
+                    <div class="col-lg-4">
+                        <input class="form-control" name="device_name" id="device_name" required="required"></input>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="form-group col-lg-6">
+                        <button type='submit' name='connection_type' value='wifi' class='btn btn-success'>Connect
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="form-group col-lg-6">
+                        <button type='submit' name='connection_type' value='lte' class='btn btn-warning'>LTE Only
+                            Device
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row hidden" id='submit-message'>
+        <div class="col-lg-8 col-lg-offset-1">
+            <h3>Applying changes...</h3>
+            <p>Your device will soon be online. If connection is unsuccessful, the Access Point will be back up in a few
+                minutes.</p>
+        </div>
+    </div>
+
+    <div class="row hidden" id='no-networks-message'>
+        <div class="col-lg-8 col-lg-offset-1">
+            <h3>No wifi networks available</h3>
+            <p>Please ensure there is a network within range and reboot the device.</p>
+        </div>
+    </div>
+
+</div>
+<a href="http://192.168.42.1:8080">
+    <div>
+        <center>
+            Giraffe-Cam01
+        </center>
+    </div>
+</a>
+<a href="http://192.168.42.1:9080">
+    <div>
+        <center>
+            Giraffe-Cam02
+        </center>
+    </div>
+</a>
+</body>
 </html>
