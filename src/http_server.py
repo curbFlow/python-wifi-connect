@@ -1,17 +1,20 @@
 # Our main wifi-connect application, which is based around an HTTP server.
 
-import os, getopt, sys, json, atexit
-import signal
-import time
-import threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import parse_qs
-from io import BytesIO
 import argparse
+import atexit
+import json
+import os
+import signal
+import sys
+import threading
+import time
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from io import BytesIO
+from urllib.parse import parse_qs
 
+import dnsmasq
 # Local modules
 import netman
-import dnsmasq
 
 # Defaults
 ADDRESS = '192.168.42.1'
@@ -21,18 +24,22 @@ pid = None
 
 initial_connection_config_file = '/etc/initial_connection.json'
 
+
 def get_initial_connection_config():
-  if os.path.exists(initial_connection_config_file) and os.path.getsize(initial_connection_config_file) > 0:
-    with open(initial_connection_config_file, 'r') as f:
-      config_json = json.load(f)
-      return config_json
-  else:
-    return None
+    if os.path.exists(initial_connection_config_file) and os.path.getsize(initial_connection_config_file) > 0:
+        with open(initial_connection_config_file, 'r') as f:
+            config_json = json.load(f)
+            return config_json
+    else:
+        return None
+
 
 def write_initial_connection_config(config_dict):
     with open(initial_connection_config_file, 'w') as f:
         json.dump(config_dict, f)
-#------------------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
 # called at exit
 def cleanup():
     print("Cleaning up prior to exit.")
@@ -41,7 +48,7 @@ def cleanup():
     # dnsmasq.restart_dnsmasq_service()
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # A custom http server class in which we can set the default path it serves
 # when it gets a GET request.
 class MyHTTPServer(HTTPServer):
@@ -50,12 +57,11 @@ class MyHTTPServer(HTTPServer):
         HTTPServer.__init__(self, server_address, RequestHandlerClass)
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # A custom http request handler class factory.
 # Handle the GET and POST requests from the UI form and JS.
 # The class factory allows us to pass custom arguments to the handler.
 def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", hotspot_password="", device_name=""):
-
     class MyHTTPReqHandler(SimpleHTTPRequestHandler):
 
         def __init__(self, *args, **kwargs):
@@ -78,14 +84,14 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             # we have to return a redirect to the gateway to get the 
             # captured portal to show up.
             if '/hotspot-detect.html' == self.path:
-                self.send_response(301) # redirect
+                self.send_response(301)  # redirect
                 new_path = f'http://{self.address}/'
                 print(f'redirecting to {new_path}')
                 self.send_header('Location', new_path)
                 self.end_headers()
 
             if '/generate_204' == self.path:
-                self.send_response(301) # redirect
+                self.send_response(301)  # redirect
                 new_path = f'http://{self.address}/'
                 print(f'redirecting to {new_path}')
                 self.send_header('Location', new_path)
@@ -114,7 +120,7 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
                 self.send_response(200)
                 self.end_headers()
                 response = BytesIO()
-                ssids = self.ssids # passed in to the class factory
+                ssids = self.ssids  # passed in to the class factory
                 """ map whatever we get from net man to our constants:
                 Security:
                     NONE         
@@ -142,7 +148,6 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             # from the ui_path we were initialized with.
             super().do_GET()
 
-
         # test with: curl localhost:5000 -d "{'name':'value'}"
         def do_POST(self):
             content_length = int(self.headers['Content-Length'])
@@ -153,7 +158,7 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
             fields = parse_qs(body.decode('utf-8'))
             print(f'POST received: {fields}, path:{self.path}')
             initial_config_params = {"name": fields['device_name'][0]}
-            if fields['connection_type'][0]=="lte":
+            if fields['connection_type'][0] == "lte":
                 # Stop the hotspot
                 netman.stop_hotspot()
                 initial_config_params["lte_only"] = True
@@ -173,26 +178,26 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
                 ssid = fields[FORM_SSID][0]
                 password = None
                 username = None
-                if FORM_HIDDEN_SSID in fields: 
-                    ssid = fields[FORM_HIDDEN_SSID][0] # override with hidden name
-                if FORM_USERNAME in fields: 
-                    username = fields[FORM_USERNAME][0] 
-                if FORM_PASSWORD in fields: 
-                    password = fields[FORM_PASSWORD][0] 
+                if FORM_HIDDEN_SSID in fields:
+                    ssid = fields[FORM_HIDDEN_SSID][0]  # override with hidden name
+                if FORM_USERNAME in fields:
+                    username = fields[FORM_USERNAME][0]
+                if FORM_PASSWORD in fields:
+                    password = fields[FORM_PASSWORD][0]
 
-                # Look up the ssid in the list we sent, to find out its security
+                    # Look up the ssid in the list we sent, to find out its security
                 # type for the new connection we have to make
-                conn_type = netman.CONN_TYPE_SEC_NONE # Open, no auth AP
+                conn_type = netman.CONN_TYPE_SEC_NONE  # Open, no auth AP
 
-                if FORM_HIDDEN_SSID in fields: 
-                    conn_type = netman.CONN_TYPE_SEC_PASSWORD # Assumption...
+                if FORM_HIDDEN_SSID in fields:
+                    conn_type = netman.CONN_TYPE_SEC_PASSWORD  # Assumption...
 
                 for s in self.ssids:
                     if FORM_SSID in s and ssid == s[FORM_SSID]:
                         if s['security'] == "ENTERPRISE":
                             conn_type = netman.CONN_TYPE_SEC_ENTERPRISE
                         elif s['security'] == "NONE":
-                            conn_type = netman.CONN_TYPE_SEC_NONE 
+                            conn_type = netman.CONN_TYPE_SEC_NONE
                         else:
                             # all others need a password
                             conn_type = netman.CONN_TYPE_SEC_PASSWORD
@@ -203,7 +208,7 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
 
                 # Connect to the user's selected AP
                 success = netman.connect_to_AP(conn_type=conn_type, conn_name=ssid, ssid=ssid, \
-                        username=username, password=password)
+                                               username=username, password=password)
 
                 if success:
                     initial_config_params["lte_only"] = False
@@ -224,9 +229,9 @@ def RequestHandlerClassFactory(address, ssids, rcode, hotspot_name="HOTSPOT", ho
                 self.ssids = netman.get_list_of_access_points()
 
                 # Start the hotspot again
-                netman.start_hotspot(self.hotspot_name, self.hotspot_password) 
+                netman.start_hotspot(self.hotspot_name, self.hotspot_password)
 
-    return  MyHTTPReqHandler # the class our factory just created.
+    return MyHTTPReqHandler  # the class our factory just created.
 
 
 def exit_on_timeout(timeout_seconds):
@@ -236,7 +241,8 @@ def exit_on_timeout(timeout_seconds):
     print("Timeout Expired, exiting...")
     os.kill(os.getpid(), signal.SIGINT)
 
-#------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 # Create the hotspot, start dnsmasq, start the HTTP server.
 # def main(address, port, ui_path, rcode, delete_connections):
 def main(args):
@@ -255,9 +261,10 @@ def main(args):
         print(f"Connection has already been configured to LTE only and device config has not yet been updated. Exiting")
         sys.exit()
     # Start a thread to keep track of time and exit when timeout has passed
-    t=threading.Thread(target=exit_on_timeout, args=[timeout])
-    t.setDaemon(True)
-    t.start()
+    if timeout > 0:
+        t = threading.Thread(target=exit_on_timeout, args=[timeout])
+        t.setDaemon(True)
+        t.start()
     # See if caller wants to delete all existing connections first
     if delete_connections:
         netman.delete_all_wifi_connections()
@@ -309,7 +316,7 @@ def main(args):
         httpd.server_close()
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Util to convert a string to an int, or provide a default.
 def string_to_int(s, default):
     try:
@@ -318,7 +325,7 @@ def string_to_int(s, default):
         return default
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Entry point and command line argument processing.
 if __name__ == "__main__":
     atexit.register(cleanup)
@@ -329,14 +336,14 @@ if __name__ == "__main__":
     delete_connections = False
     rcode = ''
 
-    usage = ''\
-f'Command line args: \n'\
-f'  -a <HTTP server address>     Default: {address} \n'\
-f'  -p <HTTP server port>        Default: {port} \n'\
-f'  -u <UI directory to serve>   Default: "{ui_path}" \n'\
-f'  -d Delete Connections First  Default: {delete_connections} \n'\
-f'  -r Device Registration Code  Default: "" \n'\
-f'  -h Show help.\n'
+    usage = '' \
+            f'Command line args: \n' \
+            f'  -a <HTTP server address>     Default: {address} \n' \
+            f'  -p <HTTP server port>        Default: {port} \n' \
+            f'  -u <UI directory to serve>   Default: "{ui_path}" \n' \
+            f'  -d Delete Connections First  Default: {delete_connections} \n' \
+            f'  -r Device Registration Code  Default: "" \n' \
+            f'  -h Show help.\n'
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -347,7 +354,8 @@ f'  -h Show help.\n'
     parser.add_argument('-u', '--ui_dir', help='UI directory to serve',
                         required=False, default=ui_path)
     parser.add_argument('-d', '--delete',
-                        help='Delete Connections First', default=False, required=False, dest="delete_connections_first", action='store_true')
+                        help='Delete Connections First', default=False, required=False, dest="delete_connections_first",
+                        action='store_true')
     parser.add_argument('-r', '--registration_code',
                         help='Device Registration Code', required=False, default="")
     parser.add_argument('-t', '--timeout',
@@ -358,10 +366,8 @@ f'  -h Show help.\n'
                         help='Password to use for the HotSpot', required=False, default="")
     parser.add_argument('-n', '--device_name',
                         help='Device name to prefill the field with', required=False, default="")
-    
+
     args = parser.parse_args()
 
     # print(args)
     main(args)
-
-
